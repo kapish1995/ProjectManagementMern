@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { Paperclip, Upload } from 'lucide-react';
 
 // const statusColor = { todo: '#f59e0b', 'in-progress': '#3b82f6', review: '#8b5cf6', done: '#10b981' };
-// const priorityColor = { high: '#ef4444', medium: '#f59e0b', low: '#10b981' };
+ const priorityColor = { high: '#ef4444', medium: '#f59e0b', low: '#10b981' };
 
 export default function TasksPage() {
   const { tasks, fetchTasks, updateTaskStatus, deleteTask, addComment, uploadFile, setCurrentTask, currentTask } = useTaskStore();
