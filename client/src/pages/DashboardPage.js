@@ -7,7 +7,7 @@ import api from '../api/axios';
 import useAuthStore from '../store/authStore';
 
 const statusColor = { todo: '#f59e0b', 'in-progress': '#3b82f6', review: '#8b5cf6', done: '#10b981' };
-const priorityColor = { high: '#ef4444', medium: '#f59e0b', low: '#10b981' };
+// const priorityColor = { high: '#ef4444', medium: '#f59e0b', low: '#10b981' };
 
 export default function DashboardPage() {
   const [stats, setStats] = useState(null);

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send, Wifi, WifiOff } from 'lucide-react';
 import { io } from 'socket.io-client';
 import Sidebar from '../components/layout/Sidebar';
-import Topbar from '../components/layout/Topbar';
+// import Topbar from '../components/layout/Topbar';
 import useAuthStore from '../store/authStore';
 import useProjectStore from '../store/projectStore';
 import api from '../api/axios';
