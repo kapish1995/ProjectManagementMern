@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Bell, Search } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
 import useAuthStore from '../../store/authStore';
