@@ -11,7 +11,7 @@ import { Paperclip, Upload } from 'lucide-react';
  const priorityColor = { high: '#ef4444', medium: '#f59e0b', low: '#10b981' };
 
 export default function TasksPage() {
-  const { tasks, fetchTasks, updateTaskStatus, deleteTask, addComment, uploadFile, setCurrentTask, currentTask } = useTaskStore();
+  const { tasks, fetchTasks, updateTaskStatus, addComment, uploadFile, setCurrentTask, currentTask } = useTaskStore();
   const { user } = useAuthStore();
   const [filter, setFilter] = useState('all');
   const [comment, setComment] = useState('');

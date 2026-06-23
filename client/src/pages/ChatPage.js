@@ -56,7 +56,7 @@ export default function ChatPage() {
       socket.emit('leave_project', projectId);
       socket.disconnect();
     };
-  }, [projectId]);
+  }, [projectId, fetchProjectById, token, user,]);
 
   // Auto scroll to bottom
   useEffect(() => {
