@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Plus, ArrowLeft, Trash2, UserPlus, Paperclip, MessageSquare } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2, UserPlus, Paperclip, MessageSquare, MessageCircle } from 'lucide-react';
 import Sidebar from '../components/layout/Sidebar';
 import Topbar from '../components/layout/Topbar';
 import useProjectStore from '../store/projectStore';
 import useTaskStore from '../store/taskStore';
-import useAuthStore from '../store/authStore';
 import toast from 'react-hot-toast';
 
 const COLUMNS = [
@@ -16,7 +15,11 @@ const COLUMNS = [
 ];
 
 function TaskModal({ project, task, onClose, onSave }) {
-  const [form, setForm] = useState(task || { title: '', description: '', priority: 'medium', status: 'todo', assignedTo: '', deadline: '' });
+  const [form, setForm] = useState(
+    task
+      ? { ...task, assignedTo: task.assignedTo?._id || '', deadline: task.deadline ? task.deadline.split('T')[0] : '' }
+      : { title: '', description: '', priority: 'medium', status: 'todo', assignedTo: '', deadline: '' }
+  );
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
@@ -50,7 +53,7 @@ function TaskModal({ project, task, onClose, onSave }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div className="form-group">
-            <label className="form-label">Assign To (User ID)</label>
+            <label className="form-label">Assign To</label>
             <select className="form-input form-select" value={form.assignedTo} onChange={e => setForm({ ...form, assignedTo: e.target.value })}>
               <option value="">Unassigned</option>
               {project?.members?.map(m => (
@@ -60,7 +63,7 @@ function TaskModal({ project, task, onClose, onSave }) {
           </div>
           <div className="form-group">
             <label className="form-label">Deadline</label>
-            <input className="form-input" type="date" value={form.deadline ? form.deadline.split('T')[0] : ''} onChange={e => setForm({ ...form, deadline: e.target.value })} />
+            <input className="form-input" type="date" value={form.deadline} onChange={e => setForm({ ...form, deadline: e.target.value })} />
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
@@ -74,10 +77,11 @@ function TaskModal({ project, task, onClose, onSave }) {
   );
 }
 
-function TaskCard({ task, onDelete, onEdit, onStatusChange }) {
+function TaskCard({ task, onDelete, onEdit }) {
   const priorityColor = { high: '#ef4444', medium: '#f59e0b', low: '#10b981' };
   return (
-    <div className="card" style={{ marginBottom: 10, padding: 14, cursor: 'pointer' }} onClick={() => onEdit(task)}>
+    <div className="card" style={{ marginBottom: 10, padding: 14, cursor: 'pointer' }}
+      onClick={() => onEdit(task)}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
         <span style={{ fontSize: 12, fontWeight: 700, color: priorityColor[task.priority] }}>● {task.priority}</span>
         <button className="btn-icon" style={{ padding: 2 }} onClick={e => { e.stopPropagation(); onDelete(task._id); }}>
@@ -85,11 +89,15 @@ function TaskCard({ task, onDelete, onEdit, onStatusChange }) {
         </button>
       </div>
       <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 8 }}>{task.title}</p>
-      {task.description && <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>{task.description.substring(0, 60)}{task.description.length > 60 ? '...' : ''}</p>}
+      {task.description && (
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
+          {task.description.substring(0, 60)}{task.description.length > 60 ? '...' : ''}
+        </p>
+      )}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        {task.assignedTo ? (
-          <div className="avatar avatar-sm" title={task.assignedTo.name}>{task.assignedTo.name?.[0]}</div>
-        ) : <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Unassigned</span>}
+        {task.assignedTo
+          ? <div className="avatar avatar-sm" title={task.assignedTo.name}>{task.assignedTo.name?.[0]}</div>
+          : <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Unassigned</span>}
         <div style={{ display: 'flex', gap: 8, color: 'var(--text-muted)', fontSize: 11 }}>
           {task.attachments?.length > 0 && <span><Paperclip size={11} /> {task.attachments.length}</span>}
           {task.comments?.length > 0 && <span><MessageSquare size={11} /> {task.comments.length}</span>}
@@ -107,24 +115,23 @@ function TaskCard({ task, onDelete, onEdit, onStatusChange }) {
 export default function ProjectDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { currentProject, fetchProjectById } = useProjectStore();
+  const { currentProject, fetchProjectById, addMember } = useProjectStore();
   const { tasks, fetchTasks, createTask, updateTask, deleteTask } = useTaskStore();
-  const { user } = useAuthStore();
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [editTask, setEditTask] = useState(null);
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [memberEmail, setMemberEmail] = useState('');
-  const { addMember } = useProjectStore();
+  const [memberLoading, setMemberLoading] = useState(false);
 
   useEffect(() => {
     fetchProjectById(id);
     fetchTasks(id);
-  }, [id]);
+  }, [id, fetchProjectById, fetchTasks]);
 
   const handleCreateTask = async (form) => {
     const t = await createTask({ ...form, project: id });
     if (t) { toast.success('Task created!'); setShowTaskModal(false); }
-    else toast.error('Failed');
+    else toast.error('Failed to create task');
   };
 
   const handleEditTask = async (form) => {
@@ -141,15 +148,24 @@ export default function ProjectDetailPage() {
   };
 
   const handleAddMember = async () => {
-    if (!memberEmail) return;
-    const ok = await addMember(id, memberEmail, 'member');
-    if (ok) { toast.success('Member added!'); setShowMemberModal(false); setMemberEmail(''); }
-    else toast.error('User not found or already a member');
+    if (!memberEmail.trim()) { toast.error('Email daalo'); return; }
+    setMemberLoading(true);
+    const result = await addMember(id, memberEmail.trim(), 'member');
+    setMemberLoading(false);
+    if (result.success) {
+      toast.success('Member added successfully!');
+      setShowMemberModal(false);
+      setMemberEmail('');
+    } else {
+      toast.error(result.message || 'Failed to add member');
+    }
   };
 
   if (!currentProject) return (
-    <div className="app-layout"><Sidebar />
-      <div className="main-content"><Topbar title="Project" />
+    <div className="app-layout">
+      <Sidebar />
+      <div className="main-content">
+        <Topbar title="Project" />
         <div className="loading-screen"><div className="spinner" /></div>
       </div>
     </div>
@@ -172,6 +188,9 @@ export default function ProjectDetailPage() {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn btn-secondary" onClick={() => navigate('/chat/' + id)}>
+                <MessageCircle size={15} /> Team Chat
+              </button>
               <button className="btn btn-secondary" onClick={() => setShowMemberModal(true)}>
                 <UserPlus size={15} /> Add Member
               </button>
@@ -184,10 +203,11 @@ export default function ProjectDetailPage() {
           {/* Members */}
           <div className="card" style={{ marginBottom: 20, padding: '12px 16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontWeight: 600, fontSize: 13 }}>Team:</span>
+              <span style={{ fontWeight: 600, fontSize: 13 }}>Team ({currentProject.members?.length || 0}):</span>
               <div style={{ display: 'flex', gap: 6 }}>
                 {currentProject.members?.map(m => (
-                  <div key={m.user._id} className="avatar avatar-sm" title={m.user.name}
+                  <div key={m.user._id} className="avatar avatar-sm"
+                    title={m.user.name + ' (' + m.role + ')'}
                     style={{ background: m.role === 'admin' ? '#6366f1' : '#10b981' }}>
                     {m.user.name?.[0]}
                   </div>
@@ -206,9 +226,11 @@ export default function ProjectDetailPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{ width: 10, height: 10, borderRadius: '50%', background: col.color, display: 'inline-block' }} />
                       <span style={{ fontWeight: 700, fontSize: 13 }}>{col.label}</span>
-                      <span style={{ background: '#f1f5f9', color: 'var(--text-muted)', fontSize: 11, padding: '1px 7px', borderRadius: 999, fontWeight: 600 }}>{colTasks.length}</span>
+                      <span style={{ background: '#f1f5f9', color: 'var(--text-muted)', fontSize: 11, padding: '1px 7px', borderRadius: 999, fontWeight: 600 }}>
+                        {colTasks.length}
+                      </span>
                     </div>
-                    <button className="btn-icon" onClick={() => { setShowTaskModal(true); }}>
+                    <button className="btn-icon" onClick={() => setShowTaskModal(true)}>
                       <Plus size={14} />
                     </button>
                   </div>
@@ -216,41 +238,42 @@ export default function ProjectDetailPage() {
                     {colTasks.map(task => (
                       <TaskCard key={task._id} task={task}
                         onDelete={handleDeleteTask}
-                        onEdit={t => setEditTask(t)}
-                        onStatusChange={() => {}} />
+                        onEdit={t => setEditTask(t)} />
                     ))}
                   </div>
                 </div>
               );
             })}
           </div>
-
         </div>
       </div>
 
-      {showTaskModal && (
-        <TaskModal project={currentProject} onClose={() => setShowTaskModal(false)} onSave={handleCreateTask} />
-      )}
-      {editTask && (
-        <TaskModal project={currentProject} task={editTask} onClose={() => setEditTask(null)} onSave={handleEditTask} />
-      )}
+      {showTaskModal && <TaskModal project={currentProject} onClose={() => setShowTaskModal(false)} onSave={handleCreateTask} />}
+      {editTask && <TaskModal project={currentProject} task={editTask} onClose={() => setEditTask(null)} onSave={handleEditTask} />}
 
       {/* Add Member Modal */}
       {showMemberModal && (
         <div className="modal-overlay" onClick={() => setShowMemberModal(false)}>
-          <div className="modal" style={{ maxWidth: 360 }} onClick={e => e.stopPropagation()}>
+          <div className="modal" style={{ maxWidth: 380 }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Add Member</h2>
+              <h2 className="modal-title">Add Team Member</h2>
               <button className="btn-icon" onClick={() => setShowMemberModal(false)}>✕</button>
             </div>
+            <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>
+              Member ka registered email daalo. Pehle unhe register karna hoga.
+            </p>
             <div className="form-group">
-              <label className="form-label">Member Email</label>
+              <label className="form-label">Email Address</label>
               <input className="form-input" type="email" placeholder="member@email.com"
-                value={memberEmail} onChange={e => setMemberEmail(e.target.value)} />
+                value={memberEmail}
+                onChange={e => setMemberEmail(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleAddMember()} />
             </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button className="btn btn-secondary" onClick={() => setShowMemberModal(false)}>Cancel</button>
-              <button className="btn btn-primary" onClick={handleAddMember}>Add</button>
+              <button className="btn btn-primary" onClick={handleAddMember} disabled={memberLoading}>
+                {memberLoading ? 'Adding...' : 'Add Member'}
+              </button>
             </div>
           </div>
         </div>

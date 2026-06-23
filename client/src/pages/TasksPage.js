@@ -3,7 +3,7 @@ import Sidebar from '../components/layout/Sidebar';
 import Topbar from '../components/layout/Topbar';
 import useTaskStore from '../store/taskStore';
 import useAuthStore from '../store/authStore';
-import api from '../api/axios';
+// import api from '../api/axios';
 import toast from 'react-hot-toast';
 import { Paperclip, Upload } from 'lucide-react';
 

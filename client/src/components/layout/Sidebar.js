@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FolderKanban, CheckSquare, Users, Bell, LogOut, Menu, X, Briefcase } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, CheckSquare, Bell, LogOut, Menu, X, Briefcase } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 
 const navItems = [
@@ -71,19 +71,16 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Desktop */}
       <aside style={{ width: 220, background: 'var(--sidebar-bg)', flexShrink: 0, display: 'flex', flexDirection: 'column' }}
         className="desktop-sidebar">
         <SidebarContent />
       </aside>
 
-      {/* Mobile toggle */}
       <button className="btn-icon mobile-menu-btn" onClick={() => setOpen(true)}
         style={{ position: 'fixed', top: 12, left: 12, zIndex: 200, background: 'var(--sidebar-bg)', color: 'white', display: 'none' }}>
         <Menu size={20} />
       </button>
 
-      {/* Mobile drawer */}
       {open && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 300 }}>
           <div onClick={() => setOpen(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} />

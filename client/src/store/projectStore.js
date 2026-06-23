@@ -35,6 +35,7 @@ const useProjectStore = create((set, get) => ({
       return data.project;
     } catch (err) {
       set({ error: err.response?.data?.message });
+      return null;
     }
   },
 
@@ -64,10 +65,9 @@ const useProjectStore = create((set, get) => ({
     try {
       const { data } = await api.post('/projects/' + projectId + '/members', { email, role });
       set({ currentProject: data.project });
-      return true;
+      return { success: true };
     } catch (err) {
-      set({ error: err.response?.data?.message });
-      return false;
+      return { success: false, message: err.response?.data?.message || 'Failed to add member' };
     }
   },
 }));

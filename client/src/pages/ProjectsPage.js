@@ -64,7 +64,8 @@ export default function ProjectsPage() {
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
 
-  useEffect(() => { fetchProjects(); }, []);
+  // useEffect(() => { fetchProjects(); }, []);
+  useEffect(() => { fetchProjects(); }, [fetchProjects]);
 
   const handleCreate = async (form) => {
     const p = await createProject(form);
