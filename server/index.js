@@ -19,10 +19,17 @@ connectDB();
 const app = express();
 const server = http.createServer(app);
 
+// Frontend URL
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+
 // Socket.io setup
 const { Server } = require('socket.io');
 const io = new Server(server, {
-  cors: { origin: 'http://localhost:3000', methods: ['GET', 'POST'], credentials: true },
+  cors: { 
+    origin: FRONTEND_URL, 
+    methods: ['GET', 'POST'], 
+    credentials: true 
+  },
 });
 
 // Socket.io auth middleware
@@ -92,7 +99,10 @@ io.on('connection', (socket) => {
 if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(cors({ 
+  origin: FRONTEND_URL, 
+  credentials: true 
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
@@ -119,5 +129,5 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(' Server running at http://localhost:' + PORT);
+  console.log('Server running at http://localhost:' + PORT);
 });
