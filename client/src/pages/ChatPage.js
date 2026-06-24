@@ -30,9 +30,12 @@ export default function ChatPage() {
     });
 
     // Connect socket
-    const socket = io('http://localhost:5000', {
-      auth: { token },
-    });
+   const socket = io(
+  process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000',
+  {
+    auth: { token },
+  }
+);
 
     socketRef.current = socket;
 
