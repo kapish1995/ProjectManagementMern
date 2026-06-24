@@ -150,8 +150,37 @@ export default function TasksPage() {
                 <input type="file" style={{ display: 'none' }} onChange={handleFileUpload} disabled={uploading} />
               </label>
               {currentTask.attachments?.map(f => (
-                <div key={f._id} style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>📎 {f.originalname}</div>
-              ))}
+  <div
+    key={f._id}
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      marginTop: 6,
+      fontSize: 12
+    }}
+  >
+    <span>📎 {f.originalname}</span>
+
+    <div style={{ display: "flex", gap: 8 }}>
+      <a
+        href={f.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="btn btn-sm btn-secondary"
+      >
+        View
+      </a>
+
+      <a
+        href={f.url}
+        download
+        className="btn btn-sm btn-primary"
+      >
+        Download
+      </a>
+    </div>
+  </div>
+))}
             </div>
 
             {/* Comments */}

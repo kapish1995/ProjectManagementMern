@@ -100,7 +100,10 @@ if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 
 // Middleware
 app.use(cors({ 
-  origin: FRONTEND_URL, 
+  origin: [
+    "http://localhost:3000",
+    "https://project-management-mern-wxzd.vercel.app"
+  ], 
   credentials: true 
 }));
 app.use(express.json());
